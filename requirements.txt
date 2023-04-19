@@ -1,0 +1,8 @@
+gama~=22.0.0
+pandas~=1.5.3
+numpy~=1.24.2
+stopit~=1.1.2
+scikit-learn~=1.2.2
+psutil~=5.9.4
+setuptools~=65.5.1
+sktime~=0.16.1
