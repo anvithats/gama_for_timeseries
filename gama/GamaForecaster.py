@@ -7,7 +7,7 @@ from gama.utilities.metrics import scoring_to_metric
 
 class GamaForecaster(Gama):
 
-    def __init__(self, config=None, scoring="neg_log_loss", *args, **kwargs):  # have to change the scoring
+    def __init__(self, config=None, scoring="neg_log_loss", *args, **kwargs):
         if not config:
             config = timeseries_config
 
