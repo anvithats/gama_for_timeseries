@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Iterable, Tuple, Union
 
+import sktime.performance_metrics.forecasting
 from sklearn.metrics import get_scorer
 from sklearn.metrics._scorer import _ProbaScorer, _BaseScorer, SCORERS
 
@@ -19,9 +20,9 @@ regression_metrics = {
     "neg_mean_squared_error",
 }
 
-#forecasting_metrics = {"relative_loss"}
+forecasting_metrics = {"relative_loss", "mean_squared_error"}
 
-all_metrics = {*classification_metrics, *regression_metrics}#, *forecasting_metrics}
+all_metrics = {*classification_metrics, *regression_metrics, *forecasting_metrics}
 reversed_scorers = {repr(v): k for k, v in SCORERS.items()}
 
 
@@ -30,15 +31,20 @@ class MetricType(Enum):
 
     CLASSIFICATION: int = 1  #: discrete target
     REGRESSION: int = 2  #: continuous target
-    #TIMESERIES: int = 3
+    TIMESERIES: int = 3
 
 
 class Metric:
     """A thin layer around the `scorer` class of scikit-learn."""
 
     def __init__(self, scorer: Union[_BaseScorer, str]):
+
         if isinstance(scorer, str):
-            scorer = get_scorer(scorer)
+            if scorer in forecasting_metrics:
+                self.name = scorer
+                scorer = get_forecasting_metrics(scorer)
+            else:
+                scorer = get_scorer(scorer)
         if not isinstance(scorer, _BaseScorer):
             raise ValueError(
                 "Scorer was not a valid scorer or could not be converted to one."
@@ -53,8 +59,8 @@ class Metric:
             self.task_type = MetricType.CLASSIFICATION
         elif self.name in regression_metrics:
             self.task_type = MetricType.REGRESSION
-        # elif self.name in forecasting_metrics:
-        #     self.task_type = MetricType.TIMESERIES
+        elif self.name in forecasting_metrics:
+            self.task_type = MetricType.TIMESERIES
         else:
             raise ValueError(
                 "Not sure which type of metric this is. Please raise an issue."
@@ -86,3 +92,13 @@ def scoring_to_metric(
             return tuple(converted_metrics)
 
     raise TypeError("scoring must be str, Metric or Iterable (of str or Metric).")
+
+
+def get_forecasting_metrics(
+    scoring: Union[str, Metric, Iterable[str], Iterable[Metric]]
+) -> Tuple[Metric, ...]:
+    if scoring == "relative_loss":
+        metric = sktime.performance_metrics.forecasting.relative_loss()
+    elif scoring == "mean_squared_error":
+        metric = sktime.performance_metrics.forecasting.mean_squared_error()
+    return metric
