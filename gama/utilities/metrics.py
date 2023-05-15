@@ -3,7 +3,6 @@ from typing import Iterable, Tuple, Union
 
 from sklearn.metrics import get_scorer
 from sklearn.metrics._scorer import _ProbaScorer, _BaseScorer, SCORERS
-#from sktime.performance_metrics.forecasting import mean_absolute_percentage_error,MeanAbsolutePercentageError
 
 
 classification_metrics = {"accuracy", "roc_auc", "average_precision", "neg_log_loss"}
@@ -20,7 +19,7 @@ regression_metrics = {
     "neg_mean_squared_error",
 }
 
-#forecasting_metrics = {"mean_absolute_percentage_error","MeanAbsolutePercentageError"}
+#forecasting_metrics = {"relative_loss"}
 
 all_metrics = {*classification_metrics, *regression_metrics}#, *forecasting_metrics}
 reversed_scorers = {repr(v): k for k, v in SCORERS.items()}
@@ -31,6 +30,7 @@ class MetricType(Enum):
 
     CLASSIFICATION: int = 1  #: discrete target
     REGRESSION: int = 2  #: continuous target
+    #TIMESERIES: int = 3
 
 
 class Metric:
@@ -53,6 +53,8 @@ class Metric:
             self.task_type = MetricType.CLASSIFICATION
         elif self.name in regression_metrics:
             self.task_type = MetricType.REGRESSION
+        # elif self.name in forecasting_metrics:
+        #     self.task_type = MetricType.TIMESERIES
         else:
             raise ValueError(
                 "Not sure which type of metric this is. Please raise an issue."
